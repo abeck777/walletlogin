@@ -1,5 +1,5 @@
 import React from 'react';
-import WalletLogin from './components/WalletLogin';
+import WalletLogin from './WalletLogin';
 
 function App() {
   return (
