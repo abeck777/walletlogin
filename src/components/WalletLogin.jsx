@@ -16,7 +16,7 @@ function WalletLogin() {
     }
 
     try {
-      const res = await fetch(`https://www.goldsilverstuff.com/impresum?rc=test-site/_functions/verifyToken?token=${token}`);
+      const res = await fetch(`https://editor.wix.com/html/editor/web/renderer/edit/0120c8e2-d111-4dd7-87bb-fe8b208ece0c?metaSiteId=59a1bc1a-6d78-4e7a-9036-5aa177254aa3/_functions/verifyToken?token=${token}`);
       const data = await res.json();
       if (!data.valid) {
         alert("Token ist abgelaufen oder ungültig.");
