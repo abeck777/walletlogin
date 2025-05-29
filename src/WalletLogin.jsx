@@ -8,24 +8,25 @@ function WalletLogin() {
 
     // 1. Token validieren
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get("accessToken");
-        
-        if (!token) {
-            alert("Kein Token – Zugriff verweigert!");
-            return;
-        }
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("accessToken");
+    
+    if (!token) {
+        alert("Kein Token erhalten!");
+        return;
+    }
 
-        fetch(`https://www.goldsilverstuff.com/_functions/verifyToken?token=${token}`)
-            .then((res) => res.json())
-            .then((data) => {
-                if (!data.valid) {
-                    alert("Token ungültig oder abgelaufen!");
-                } else {
-                    setIsAuthorized(true);
-                }
-            });
-    }, []);
+    fetch(`https://www.goldsilverstuff.com/_functions/verifyToken?token=${token}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.valid) throw new Error("Invalid token");
+            setIsAuthorized(true);
+        })
+        .catch(err => {
+            console.error("Fehler:", err);
+            window.location.href = "https://www.goldsilverstuff.com/error";
+        });
+}, []);
 
     // 2. Wallet verbinden
     const connectWallet = async () => {
