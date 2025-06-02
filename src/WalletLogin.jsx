@@ -1,27 +1,15 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { ethers } from "ethers";
 
 function WalletLogin() {
-    useEffect(() => {
-        const token = new URLSearchParams(window.location.search).get("accessToken");
-        if (!token) {
-            alert("⚠️ Kein Zugriffstoken gefunden.");
-        }
-    }, []);
-
     const connectWallet = async () => {
-        const accessToken = new URLSearchParams(window.location.search).get("accessToken");
-        if (!accessToken) {
-            alert("⚠️ Zugriffstoken fehlt in der URL.");
-            return;
-        }
-
         if (!window.ethereum) {
             alert("⚠️ MetaMask nicht gefunden.");
             return;
         }
 
         try {
+            // Wallet-Verbindung anfragen
             await window.ethereum.request({ method: "eth_requestAccounts" });
             const provider = new ethers.BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
@@ -29,11 +17,11 @@ function WalletLogin() {
 
             console.log("✅ Verbunden mit Wallet:", walletAddress);
 
-            // Token bei Wix erstellen und Wallet-Adresse mitsenden
+            // Backend-Request, um Token mit Wallet-Adresse zu erstellen
             const response = await fetch("https://www.goldsilverstuff.com/_functions/createLoginToken", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ walletAddress }) // Wallet-Adresse hier mitsenden
+                body: JSON.stringify({ walletAddress })
             });
 
             const data = await response.json();
@@ -43,7 +31,7 @@ function WalletLogin() {
                 return;
             }
 
-            // Weiterleitung zur Dashboard-Seite mit Token
+            // Weiterleitung mit Token in URL
             window.location.href = `https://www.goldsilverstuff.com/dashboard?accessToken=${data.token}`;
         } catch (error) {
             console.error("❌ Wallet-Verbindung fehlgeschlagen:", error);
