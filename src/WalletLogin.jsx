@@ -1,63 +1,70 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 
 function WalletLogin() {
-    const connectWallet = async () => {
-        if (!window.ethereum) {
-            alert("⚠️ MetaMask nicht gefunden.");
-            return;
-        }
+  const [token, setToken] = useState(null);
 
-        try {
-            // Wallet-Verbindung anfragen
-            await window.ethereum.request({ method: "eth_requestAccounts" });
-            const provider = new ethers.BrowserProvider(window.ethereum);
-            const signer = await provider.getSigner();
-            const walletAddress = await signer.getAddress();
+  useEffect(() => {
+    // Token aus der URL lesen
+    const params = new URLSearchParams(window.location.search);
+    const accessToken = params.get("accessToken");
 
-            console.log("✅ Verbunden mit Wallet:", walletAddress);
+    if (!accessToken) {
+      alert("❌ Zugriffstoken fehlt in der URL.");
+      return;
+    }
 
-            // Backend-Request, um Token mit Wallet-Adresse zu erstellen
-            const response = await fetch("https://www.goldsilverstuff.com/_functions/createLoginToken", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ walletAddress }),
-                mode: 'cors',
-            });
+    setToken(accessToken);
+  }, []);
 
-            const data = await response.json();
+  const connectWallet = async () => {
+    if (!token) {
+      alert("❌ Zugriffstoken nicht geladen.");
+      return;
+    }
 
-            if (!data.token) {
-                alert("❌ Token konnte nicht erstellt werden.");
-                return;
-            }
+    if (!window.ethereum) {
+      alert("⚠️ Bitte installiere MetaMask.");
+      return;
+    }
 
-            // Weiterleitung mit Token in URL
-            window.location.href = `https://www.goldsilverstuff.com/dashboard?accessToken=${data.token}`;
-        } catch (error) {
-            console.error("❌ Wallet-Verbindung fehlgeschlagen:", error);
-            alert("Verbindung zur Wallet fehlgeschlagen.");
-        }
-    };
+    try {
+      await window.ethereum.request({ method: "eth_requestAccounts" });
 
-    return (
-        <div style={{ padding: "2rem", textAlign: "center" }}>
-            <button
-                onClick={connectWallet}
-                style={{
-                    padding: "10px 20px",
-                    fontSize: "16px",
-                    cursor: "pointer",
-                    backgroundColor: "#333",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "5px",
-                }}
-            >
-                🔐 Wallet verbinden
-            </button>
-        </div>
-    );
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const walletAddress = await signer.getAddress();
+
+      console.log("✅ Verbunden mit Wallet:", walletAddress);
+
+      // Weiterleitung zurück zu Wix mit Token und Wallet-Adresse
+      const redirectUrl = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${walletAddress}`;
+      window.location.href = redirectUrl;
+    } catch (error) {
+      console.error("❌ Wallet-Verbindung fehlgeschlagen:", error);
+      alert("❌ Verbindung zur Wallet fehlgeschlagen.");
+    }
+  };
+
+  return (
+    <div style={{ padding: "2rem", textAlign: "center" }}>
+      <h2>🔐 Wallet-Verbindung starten</h2>
+      <button
+        onClick={connectWallet}
+        style={{
+          padding: "12px 24px",
+          fontSize: "18px",
+          backgroundColor: "#222",
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+        }}
+      >
+        Wallet verbinden mit MetaMask
+      </button>
+    </div>
+  );
 }
 
 export default WalletLogin;
