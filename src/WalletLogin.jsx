@@ -38,7 +38,7 @@ function WalletLogin() {
       console.log("✅ Verbunden mit Wallet:", walletAddress);
 
       // Weiterleitung zurück zu Wix mit Token und Wallet-Adresse
-      const redirectUrl = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${walletAddress}`;
+      const redirectUrl = `https://www.goldsilverstuff.com/wallet-redirect?token=${token}&wallet=${walletAddress}`;
       window.location.href = redirectUrl;
     } catch (error) {
       console.error("❌ Wallet-Verbindung fehlgeschlagen:", error);
