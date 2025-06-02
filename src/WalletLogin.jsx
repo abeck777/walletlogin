@@ -21,7 +21,8 @@ function WalletLogin() {
             const response = await fetch("https://www.goldsilverstuff.com/_functions/createLoginToken", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ walletAddress })
+                body: JSON.stringify({ walletAddress }),
+                mode: 'cors',
             });
 
             const data = await response.json();
