@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import WalletConnectProvider from "@walletconnect/web3-provider";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
+import { EthereumProvider } from "@walletconnect/ethereum-provider";
 
 function WalletLogin() {
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState<string | null>(null);
   const [connector, setConnector] = useState("metamask");
 
   useEffect(() => {
@@ -30,7 +30,7 @@ function WalletLogin() {
       return;
     }
 
-    let provider;
+    let provider: ethers.BrowserProvider;
     try {
       if (connector === "metamask") {
         if (!window.ethereum) {
@@ -41,16 +41,19 @@ function WalletLogin() {
         provider = new ethers.BrowserProvider(window.ethereum);
 
       } else if (connector === "walletconnect") {
-        const wcProvider = new WalletConnectProvider({
-          rpc: { 1: "https://mainnet.infura.io/v3/YOUR_INFURA_ID" }
+        // WalletConnect v2
+        const wcProvider = await EthereumProvider.init({
+          projectId: "DEIN_WC_V2_PROJECT_ID", // WalletConnect v2 Project ID
+          chains: [1],                         // Ethereum Mainnet
+          showQrModal: true
         });
         await wcProvider.enable();
-        provider = new ethers.BrowserProvider(wcProvider);
+        provider = new ethers.BrowserProvider(wcProvider as any);
 
       } else if (connector === "coinbase") {
         const cbWallet = new CoinbaseWalletSDK({ appName: "MeinShop", darkMode: false });
         const cbProvider = cbWallet.makeWeb3Provider(
-          "https://mainnet.infura.io/v3/YOUR_INFURA_ID",
+          "https://mainnet.infura.io/v3/DEINE_INFURA_ID", // Infura API Key
           1
         );
         await cbProvider.request({ method: "eth_requestAccounts" });
@@ -112,10 +115,11 @@ function WalletLogin() {
           cursor: 'pointer'
         }}
       >
-        Mit {connectors.find(c => c.id === connector).name} verbinden
+        Mit {connectors.find(c => c.id === connector)?.name} verbinden
       </button>
     </div>
   );
 }
 
 export default WalletLogin;
+
