@@ -1,18 +1,7 @@
-// src/WalletLogin.jsx
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
-
-// AppKit v2 / WalletConnect v2
-import { createAppKit, AppKitProvider } from "@reown/appkit";
-import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
-
-// Einmalige AppKit-Initialisierung
-const appKit = createAppKit({
-  projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
-  adapters: [new WagmiAdapter()],
-  chains: [1]  // Ethereum Mainnet
-});
+import { EthereumProvider } from "@walletconnect/ethereum-provider";
 
 export default function WalletLogin() {
   const [token, setToken] = useState(null);
@@ -51,12 +40,20 @@ export default function WalletLogin() {
         provider = new ethers.BrowserProvider(window.ethereum);
 
       } else if (connector === "walletconnect") {
-        // AppKit-Modal für WalletConnect v2
-        const wcProvider = await appKit.openModal();
+        // Direkter WalletConnect v2
+        const wcProvider = await EthereumProvider.init({
+          projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
+          chains: [1],
+          showQrModal: true
+        });
+        await wcProvider.enable();
         provider = new ethers.BrowserProvider(wcProvider);
 
       } else if (connector === "coinbase") {
-        const cbWallet = new CoinbaseWalletSDK({ appName: "MeinShop", darkMode: false });
+        const cbWallet = new CoinbaseWalletSDK({
+          appName: "MeinShop",
+          darkMode: false
+        });
         const cbProvider = cbWallet.makeWeb3Provider(
           process.env.NEXT_PUBLIC_INFURA_URL,
           1
@@ -67,10 +64,9 @@ export default function WalletLogin() {
 
       const signer = await provider.getSigner();
       const walletAddress = await signer.getAddress();
-      console.log(`✅ Verbunden mit Wallet: ${walletAddress}`);
-
       window.location.href = 
         `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${walletAddress}`;
+
     } catch (error) {
       console.error("❌ Wallet-Verbindung fehlgeschlagen:", error);
       alert("❌ Verbindung zur Wallet fehlgeschlagen.");
@@ -78,55 +74,42 @@ export default function WalletLogin() {
   };
 
   return (
-    <AppKitProvider appKit={appKit}>
-      <div style={{ maxWidth: '400px', margin: '2rem auto', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-        <img src="/logos/company-logo.png" alt="Company Logo" style={{ maxWidth: '150px', marginBottom: '1.5rem' }} />
-        <h2 style={{ marginBottom: '1rem' }}>🔐 Wallet-Verbindung starten</h2>
+    <div style={{ maxWidth: '400px', margin: '2rem auto', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
+      <img src="/logos/company-logo.png" alt="Company Logo" style={{ maxWidth: '150px', marginBottom: '1.5rem' }} />
+      <h2 style={{ marginBottom: '1rem' }}>🔐 Wallet-Verbindung starten</h2>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-          {connectors.map(c => (
-            <button
-              key={c.id}
-              onClick={() => setConnector(c.id)}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                margin: '0 0.25rem',
-                border: connector === c.id ? '2px solid #0070f3' : '1px solid #ccc',
-                borderRadius: '8px',
-                background: '#fff',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <img src={c.logo} alt={c.name} style={{ width: '24px', height: '24px', marginRight: '0.5rem' }} />
-              {c.name}
-            </button>
-          ))}
-        </div>
-
-        <button
-          onClick={connectWallet}
-          style={{
-            width: '100%',
-            padding: '12px',
-            fontSize: '18px',
-            backgroundColor: '#222',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          Mit {connectors.find(c => c.id === connector)?.name} verbinden
-        </button>
-
-        <p style={{ marginTop: '1.5rem', fontSize: '14px', color: '#555' }}>
-          Noch keine Wallet? <a href="https://www.youtube-nocookie.com/watch?v=VIDEOID" target="_blank" rel="noopener noreferrer">Hier findest du eine 2-Minuten-Anleitung</a>.
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+        {connectors.map(c => (
+          <button
+            key={c.id}
+            onClick={() => setConnector(c.id)}
+            style={{
+              flex: 1, padding: '0.75rem', margin: '0 0.25rem',
+              border: connector===c.id ? '2px solid #0070f3' : '1px solid #ccc',
+              borderRadius:'8px', background:'#fff', cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center'
+            }}
+          >
+            <img src={c.logo} alt={c.name} style={{ width:'24px', height:'24px', marginRight:'0.5rem' }} />
+            {c.name}
+          </button>
+        ))}
       </div>
-    </AppKitProvider>
+
+      <button
+        onClick={connectWallet}
+        style={{
+          width:'100%', padding:'12px', fontSize:'18px',
+          backgroundColor:'#222', color:'#fff', border:'none',
+          borderRadius:'8px', cursor:'pointer'
+        }}
+      >
+        Mit {connectors.find(c=>c.id===connector)?.name} verbinden
+      </button>
+
+      <p style={{ marginTop:'1.5rem', fontSize:'14px', color:'#555' }}>
+        Noch keine Wallet? <a href="https://www.youtube-nocookie.com/watch?v=VIDEOID" target="_blank" rel="noopener noreferrer">Hier gibt's eine 2-Minuten-Anleitung</a>.
+      </p>
+    </div>
   );
 }
