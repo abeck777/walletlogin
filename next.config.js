@@ -6,13 +6,15 @@ module.exports = {
     if (!isServer) {
       config.resolve.fallback = {
         ...(config.resolve.fallback || {}),
-        util:       require.resolve('util/'),
-        assert:     require.resolve('assert/'),
-        stream:     require.resolve('stream-browserify'),
-        crypto:     require.resolve('crypto-browserify'),
-        buffer:     require.resolve('buffer/'),
-        process:    require.resolve('process/browser'),
-        url:        require.resolve('url/'),            // <— hier neu
+        util:    require.resolve('util/'),
+        assert:  require.resolve('assert/'),
+        stream:  require.resolve('stream-browserify'),
+        crypto:  require.resolve('crypto-browserify'),
+        buffer:  require.resolve('buffer/'),
+        process: require.resolve('process/browser'),
+        url:     require.resolve('url/'),
+        http:    require.resolve('stream-http'),       // <— hier hinzugefügt
+        https:   require.resolve('https-browserify'),  // <— hier hinzugefügt
       };
 
       config.plugins.push(
