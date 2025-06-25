@@ -1,16 +1,16 @@
+// src/WalletLogin.jsx
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 import { EthereumProvider } from "@walletconnect/ethereum-provider";
 
-function WalletLogin() {
-  const [token, setToken] = useState<string | null>(null);
+export default function WalletLogin() {
+  const [token, setToken] = useState(null);
   const [connector, setConnector] = useState("metamask");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const accessToken = params.get("accessToken");
-
     if (!accessToken) {
       alert("❌ Zugriffstoken fehlt in der URL.");
       return;
@@ -30,7 +30,7 @@ function WalletLogin() {
       return;
     }
 
-    let provider: ethers.BrowserProvider;
+    let provider;
     try {
       if (connector === "metamask") {
         if (!window.ethereum) {
@@ -41,19 +41,18 @@ function WalletLogin() {
         provider = new ethers.BrowserProvider(window.ethereum);
 
       } else if (connector === "walletconnect") {
-        // WalletConnect v2
         const wcProvider = await EthereumProvider.init({
-          projectId: "DEIN_WC_V2_PROJECT_ID", // WalletConnect v2 Project ID
-          chains: [1],                         // Ethereum Mainnet
+          projectId: "DEIN_WC_V2_PROJECT_ID",
+          chains: [1],
           showQrModal: true
         });
         await wcProvider.enable();
-        provider = new ethers.BrowserProvider(wcProvider as any);
+        provider = new ethers.BrowserProvider(wcProvider);
 
       } else if (connector === "coinbase") {
         const cbWallet = new CoinbaseWalletSDK({ appName: "MeinShop", darkMode: false });
         const cbProvider = cbWallet.makeWeb3Provider(
-          "https://mainnet.infura.io/v3/DEINE_INFURA_ID", // Infura API Key
+          "https://mainnet.infura.io/v3/DEINE_INFURA_ID",
           1
         );
         await cbProvider.request({ method: "eth_requestAccounts" });
@@ -64,9 +63,7 @@ function WalletLogin() {
       const walletAddress = await signer.getAddress();
       console.log(`✅ Verbunden mit Wallet: ${walletAddress}`);
 
-      const redirectUrl = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${walletAddress}`;
-      window.location.href = redirectUrl;
-
+      window.location.href = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${walletAddress}`;
     } catch (error) {
       console.error("❌ Wallet-Verbindung fehlgeschlagen:", error);
       alert("❌ Verbindung zur Wallet fehlgeschlagen.");
@@ -79,21 +76,15 @@ function WalletLogin() {
       <h2 style={{ marginBottom: '1rem' }}>🔐 Wallet-Verbindung starten</h2>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-        {connectors.map((c) => (
+        {connectors.map(c => (
           <button
             key={c.id}
             onClick={() => setConnector(c.id)}
             style={{
-              flex: 1,
-              padding: '0.75rem',
-              margin: '0 0.25rem',
+              flex: 1, padding: '0.75rem', margin: '0 0.25rem',
               border: connector === c.id ? '2px solid #0070f3' : '1px solid #ccc',
-              borderRadius: '8px',
-              background: '#fff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              borderRadius: '8px', background: '#fff', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}
           >
             <img src={c.logo} alt={c.name} style={{ width: '24px', height: '24px', marginRight: '0.5rem' }} />
@@ -105,14 +96,9 @@ function WalletLogin() {
       <button
         onClick={connectWallet}
         style={{
-          width: '100%',
-          padding: '12px',
-          fontSize: '18px',
-          backgroundColor: '#222',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer'
+          width: '100%', padding: '12px', fontSize: '18px',
+          backgroundColor: '#222', color: '#fff', border: 'none',
+          borderRadius: '8px', cursor: 'pointer'
         }}
       >
         Mit {connectors.find(c => c.id === connector)?.name} verbinden
@@ -120,6 +106,3 @@ function WalletLogin() {
     </div>
   );
 }
-
-export default WalletLogin;
-
