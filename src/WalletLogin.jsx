@@ -2,7 +2,17 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
-import { EthereumProvider } from "@walletconnect/ethereum-provider";
+
+// AppKit v2 / WalletConnect v2
+import { createAppKit, AppKitProvider } from "@reown/appkit";
+import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
+
+// Einmalige AppKit-Initialisierung
+const appKit = createAppKit({
+  projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
+  adapters: [new WagmiAdapter()],
+  chains: [1]  // Ethereum Mainnet
+});
 
 export default function WalletLogin() {
   const [token, setToken] = useState(null);
@@ -19,9 +29,9 @@ export default function WalletLogin() {
   }, []);
 
   const connectors = [
-    { id: "metamask", name: "MetaMask", logo: "/logos/metamask.png" },
-    { id: "walletconnect", name: "WalletConnect", logo: "/logos/walletconnect.png" },
-    { id: "coinbase", name: "Coinbase Wallet", logo: "/logos/coinbase.png" }
+    { id: "metamask",      name: "MetaMask",        logo: "/logos/metamask.png" },
+    { id: "walletconnect", name: "WalletConnect",   logo: "/logos/walletconnect.png" },
+    { id: "coinbase",      name: "Coinbase Wallet", logo: "/logos/coinbase.png" }
   ];
 
   const connectWallet = async () => {
@@ -41,18 +51,14 @@ export default function WalletLogin() {
         provider = new ethers.BrowserProvider(window.ethereum);
 
       } else if (connector === "walletconnect") {
-        const wcProvider = await EthereumProvider.init({
-          projectId: "DEIN_WC_V2_PROJECT_ID",
-          chains: [1],
-          showQrModal: true
-        });
-        await wcProvider.enable();
+        // AppKit-Modal für WalletConnect v2
+        const wcProvider = await appKit.openModal();
         provider = new ethers.BrowserProvider(wcProvider);
 
       } else if (connector === "coinbase") {
         const cbWallet = new CoinbaseWalletSDK({ appName: "MeinShop", darkMode: false });
         const cbProvider = cbWallet.makeWeb3Provider(
-          "https://mainnet.infura.io/v3/DEINE_INFURA_ID",
+          process.env.NEXT_PUBLIC_INFURA_URL,
           1
         );
         await cbProvider.request({ method: "eth_requestAccounts" });
@@ -63,7 +69,8 @@ export default function WalletLogin() {
       const walletAddress = await signer.getAddress();
       console.log(`✅ Verbunden mit Wallet: ${walletAddress}`);
 
-      window.location.href = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${walletAddress}`;
+      window.location.href = 
+        `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${walletAddress}`;
     } catch (error) {
       console.error("❌ Wallet-Verbindung fehlgeschlagen:", error);
       alert("❌ Verbindung zur Wallet fehlgeschlagen.");
@@ -71,38 +78,55 @@ export default function WalletLogin() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '2rem auto', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-      <img src="/logos/company-logo.png" alt="Company Logo" style={{ maxWidth: '150px', marginBottom: '1.5rem' }} />
-      <h2 style={{ marginBottom: '1rem' }}>🔐 Wallet-Verbindung starten</h2>
+    <AppKitProvider appKit={appKit}>
+      <div style={{ maxWidth: '400px', margin: '2rem auto', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
+        <img src="/logos/company-logo.png" alt="Company Logo" style={{ maxWidth: '150px', marginBottom: '1.5rem' }} />
+        <h2 style={{ marginBottom: '1rem' }}>🔐 Wallet-Verbindung starten</h2>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-        {connectors.map(c => (
-          <button
-            key={c.id}
-            onClick={() => setConnector(c.id)}
-            style={{
-              flex: 1, padding: '0.75rem', margin: '0 0.25rem',
-              border: connector === c.id ? '2px solid #0070f3' : '1px solid #ccc',
-              borderRadius: '8px', background: '#fff', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}
-          >
-            <img src={c.logo} alt={c.name} style={{ width: '24px', height: '24px', marginRight: '0.5rem' }} />
-            {c.name}
-          </button>
-        ))}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+          {connectors.map(c => (
+            <button
+              key={c.id}
+              onClick={() => setConnector(c.id)}
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                margin: '0 0.25rem',
+                border: connector === c.id ? '2px solid #0070f3' : '1px solid #ccc',
+                borderRadius: '8px',
+                background: '#fff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <img src={c.logo} alt={c.name} style={{ width: '24px', height: '24px', marginRight: '0.5rem' }} />
+              {c.name}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={connectWallet}
+          style={{
+            width: '100%',
+            padding: '12px',
+            fontSize: '18px',
+            backgroundColor: '#222',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          Mit {connectors.find(c => c.id === connector)?.name} verbinden
+        </button>
+
+        <p style={{ marginTop: '1.5rem', fontSize: '14px', color: '#555' }}>
+          Noch keine Wallet? <a href="https://www.youtube-nocookie.com/watch?v=VIDEOID" target="_blank" rel="noopener noreferrer">Hier findest du eine 2-Minuten-Anleitung</a>.
+        </p>
       </div>
-
-      <button
-        onClick={connectWallet}
-        style={{
-          width: '100%', padding: '12px', fontSize: '18px',
-          backgroundColor: '#222', color: '#fff', border: 'none',
-          borderRadius: '8px', cursor: 'pointer'
-        }}
-      >
-        Mit {connectors.find(c => c.id === connector)?.name} verbinden
-      </button>
-    </div>
+    </AppKitProvider>
   );
 }
