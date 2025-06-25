@@ -2,10 +2,6 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
-import metamaskLogo from "../public/logos/metamask.png";
-import walletConnectLogo from "../public/logos/walletconnect.png";
-import coinbaseLogo from "../public/logos/coinbase.png";
-import companyLogo from "../public/logos/company-logo.png";
 
 function WalletLogin() {
   const [token, setToken] = useState(null);
@@ -23,9 +19,9 @@ function WalletLogin() {
   }, []);
 
   const connectors = [
-    { id: "metamask", name: "MetaMask", logo: metamaskLogo },
-    { id: "walletconnect", name: "WalletConnect", logo: walletConnectLogo },
-    { id: "coinbase", name: "Coinbase Wallet", logo: coinbaseLogo }
+    { id: "metamask", name: "MetaMask", logo: "/logos/metamask.png" },
+    { id: "walletconnect", name: "WalletConnect", logo: "/logos/walletconnect.png" },
+    { id: "coinbase", name: "Coinbase Wallet", logo: "/logos/coinbase.png" }
   ];
 
   const connectWallet = async () => {
@@ -76,7 +72,7 @@ function WalletLogin() {
 
   return (
     <div style={{ maxWidth: '400px', margin: '2rem auto', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-      <img src={companyLogo} alt="Company Logo" style={{ maxWidth: '150px', marginBottom: '1.5rem' }} />
+      <img src="/logos/company-logo.png" alt="Company Logo" style={{ maxWidth: '150px', marginBottom: '1.5rem' }} />
       <h2 style={{ marginBottom: '1rem' }}>🔐 Wallet-Verbindung starten</h2>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
