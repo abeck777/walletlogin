@@ -1,3 +1,4 @@
+// src/WalletLogin.jsx
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
@@ -40,14 +41,14 @@ export default function WalletLogin() {
         provider = new ethers.BrowserProvider(window.ethereum);
 
       } else if (connector === "walletconnect") {
-        // Direkter WalletConnect v2
-        const wcProvider = await EthereumProvider.init({
+        // reines WalletConnect v2
+        const wc = await EthereumProvider.init({
           projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
-          chains: [1],
+          chains: [1],           // Mainnet
           showQrModal: true
         });
-        await wcProvider.enable();
-        provider = new ethers.BrowserProvider(wcProvider);
+        await wc.enable();
+        provider = new ethers.BrowserProvider(wc);
 
       } else if (connector === "coinbase") {
         const cbWallet = new CoinbaseWalletSDK({
@@ -64,11 +65,11 @@ export default function WalletLogin() {
 
       const signer = await provider.getSigner();
       const walletAddress = await signer.getAddress();
-      window.location.href = 
+      window.location.href =
         `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${walletAddress}`;
 
-    } catch (error) {
-      console.error("❌ Wallet-Verbindung fehlgeschlagen:", error);
+    } catch (err) {
+      console.error("❌ Wallet-Verbindung fehlgeschlagen", err);
       alert("❌ Verbindung zur Wallet fehlgeschlagen.");
     }
   };
@@ -85,12 +86,12 @@ export default function WalletLogin() {
             onClick={() => setConnector(c.id)}
             style={{
               flex: 1, padding: '0.75rem', margin: '0 0.25rem',
-              border: connector===c.id ? '2px solid #0070f3' : '1px solid #ccc',
-              borderRadius:'8px', background:'#fff', cursor:'pointer',
-              display:'flex', alignItems:'center', justifyContent:'center'
+              border: connector === c.id ? '2px solid #0070f3' : '1px solid #ccc',
+              borderRadius: '8px', background: '#fff', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}
           >
-            <img src={c.logo} alt={c.name} style={{ width:'24px', height:'24px', marginRight:'0.5rem' }} />
+            <img src={c.logo} alt={c.name} style={{ width: '24px', height: '24px', marginRight: '0.5rem' }} />
             {c.name}
           </button>
         ))}
@@ -99,15 +100,15 @@ export default function WalletLogin() {
       <button
         onClick={connectWallet}
         style={{
-          width:'100%', padding:'12px', fontSize:'18px',
-          backgroundColor:'#222', color:'#fff', border:'none',
-          borderRadius:'8px', cursor:'pointer'
+          width: '100%', padding: '12px', fontSize: '18px',
+          backgroundColor: '#222', color: '#fff', border: 'none',
+          borderRadius: '8px', cursor: 'pointer'
         }}
       >
-        Mit {connectors.find(c=>c.id===connector)?.name} verbinden
+        Mit {connectors.find(c => c.id === connector)?.name} verbinden
       </button>
 
-      <p style={{ marginTop:'1.5rem', fontSize:'14px', color:'#555' }}>
+      <p style={{ marginTop: '1.5rem', fontSize: '14px', color: '#555' }}>
         Noch keine Wallet? <a href="https://www.youtube-nocookie.com/watch?v=VIDEOID" target="_blank" rel="noopener noreferrer">Hier gibt's eine 2-Minuten-Anleitung</a>.
       </p>
     </div>
