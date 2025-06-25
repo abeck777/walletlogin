@@ -13,8 +13,9 @@ module.exports = {
         buffer:  require.resolve('buffer/'),
         process: require.resolve('process/browser'),
         url:     require.resolve('url/'),
-        http:    require.resolve('stream-http'),       // <— hier hinzugefügt
-        https:   require.resolve('https-browserify'),  // <— hier hinzugefügt
+        http:    require.resolve('stream-http'),
+        https:   require.resolve('https-browserify'),
+        os:      require.resolve('os-browserify/browser'),    // ← hier neu
       };
 
       config.plugins.push(
