@@ -114,7 +114,7 @@ export default function WalletLogin() {
       </p>
 
       <button
-        onClick={() => { window.location.href = '/wallet-login-page'; }}
+        onClick={() => { window.location.href = 'https://www.goldsilverstuff.com/wallet-login-page'; }}
         style={{
           marginTop: '2rem', padding: '8px 16px', fontSize: '14px',
           backgroundColor: '#eee', color: '#222', border: '1px solid #ccc',
