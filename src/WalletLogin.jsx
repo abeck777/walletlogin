@@ -55,7 +55,7 @@ export default function WalletLogin() {
     af: { header: "🔐 Sluit beursie aan", guidePrefix: "Nog geen beursie? ", guideLink: "Hier is 'n 2-minuut gids.", connect: "Verbind met {name}", back: "Terug na aanmeldbladsy" }
   };
 
-  function connectWallet() {
+  function connectHandler() {
     if (!token) {
       alert(translations[language].guidePrefix + translations[language].connect.replace("{name}", connectors.find(c => c.id === connector).name));
       return;
@@ -106,9 +106,9 @@ export default function WalletLogin() {
           </button>
         ))}
       </div>
-      <button onClick={connectWallet} style={{ width: '100%', padding: '12px', fontSize: '18px', backgroundColor: '#222', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>{connectText}</button>
+      <button onClick={connectHandler} style={{ width: '100%', padding: '12px', fontSize: '18px', backgroundColor: '#222', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>{connectText}</button>
       <p style={{ marginTop: '1.5rem', fontSize: '14px', color: '#555' }}>{t.guidePrefix}<a href="https://www.youtube-nocookie.com/watch?v=465676767787" target="_blank" rel="noopener noreferrer">{t.guideLink}</a></p>
-      <button onClick={() => { window.location.href = '/wallet-login-page'; }} style={{ marginTop: '2rem', padding: '8px 16px', fontSize: '14px', backgroundColor: '#eee', color: '#222', border: '1px solid '#ccc', borderRadius: '4px', cursor: 'pointer' }}>{t.back}</button>
+      <button onClick={() => { window.location.href = '/wallet-login-page'; }} style={{ marginTop: '2rem', padding: '8px 16px', fontSize: '14px', backgroundColor: '#eee', color: '#222', border: "1px solid #ccc", borderRadius: '4px', cursor: 'pointer' }}>{t.back}</button>
     </div>
   );
 }
