@@ -3,10 +3,12 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 import { EthereumProvider } from "@walletconnect/ethereum-provider";
+import { useRouter } from 'next/router'; // for navigation
 
 export default function WalletLogin() {
   const [token, setToken] = useState(null);
   const [connector, setConnector] = useState("metamask");
+  const router = useRouter();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -76,7 +78,8 @@ export default function WalletLogin() {
 
   return (
     <div style={{ maxWidth: '400px', margin: '2rem auto', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-      <img src="/logos/company-logo.png" alt="Company Logo" style={{ maxWidth: '150px', marginBottom: '1.5rem' }} />
+      <img src="/logos/company-logo.png" alt="Company Logo" style={{ maxWidth: '150px', marginBottom: '0.5rem' }} />
+      <p style={{ marginBottom: '1.5rem', fontSize: '12px', color: '#555' }}>GoldSilverStuff.com©</p>
       <h2 style={{ marginBottom: '1rem' }}>🔐 Wallet-Verbindung starten</h2>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
@@ -111,6 +114,17 @@ export default function WalletLogin() {
       <p style={{ marginTop: '1.5rem', fontSize: '14px', color: '#555' }}>
         Noch keine Wallet? <a href="https://www.youtube-nocookie.com/watch?v=465676767787" target="_blank" rel="noopener noreferrer">Hier gibt's eine 2-Minuten-Anleitung</a>.
       </p>
+
+      <button
+        onClick={() => router.push('/wallet-login-page')}
+        style={{
+          marginTop: '2rem', padding: '8px 16px', fontSize: '14px',
+          backgroundColor: '#eee', color: '#222', border: '1px solid #ccc',
+          borderRadius: '4px', cursor: 'pointer'
+        }}
+      >
+        zurück zur Login-Seite
+      </button>
     </div>
   );
 }
