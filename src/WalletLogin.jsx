@@ -109,7 +109,7 @@ export default function WalletLogin() {
       </button>
 
       <p style={{ marginTop: '1.5rem', fontSize: '14px', color: '#555' }}>
-        Noch keine Wallet? <a href="https://www.youtube-nocookie.com/watch?v=VIDEOID" target="_blank" rel="noopener noreferrer">Hier gibt's eine 2-Minuten-Anleitung</a>.
+        Noch keine Wallet? <a href="https://www.youtube-nocookie.com/watch?v=465676767787" target="_blank" rel="noopener noreferrer">Hier gibt's eine 2-Minuten-Anleitung</a>.
       </p>
     </div>
   );
