@@ -88,6 +88,9 @@ export default function WalletLogin() {
         provider = new ethers.BrowserProvider(window.ethereum);
 
       } else if (connector === "walletconnect") {
+        console.log("🛠️ WC Project ID:", process.env.NEXT_PUBLIC_WC_PROJECT_ID);
+        console.log("🛠️ Infura URL:   ", process.env.NEXT_PUBLIC_INFURA_URL);
+        
         const wc = await EthereumProvider.init({
           projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
           rpcMap: { 1: process.env.NEXT_PUBLIC_INFURA_URL },
