@@ -3,12 +3,10 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 import { EthereumProvider } from "@walletconnect/ethereum-provider";
-import { useRouter } from 'next/router'; // for navigation
 
 export default function WalletLogin() {
   const [token, setToken] = useState(null);
   const [connector, setConnector] = useState("metamask");
-  const router = useRouter();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -116,7 +114,7 @@ export default function WalletLogin() {
       </p>
 
       <button
-        onClick={() => router.push('/wallet-login-page')}
+        onClick={() => { window.location.href = '/wallet-login-page'; }}
         style={{
           marginTop: '2rem', padding: '8px 16px', fontSize: '14px',
           backgroundColor: '#eee', color: '#222', border: '1px solid #ccc',
