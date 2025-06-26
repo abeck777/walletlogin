@@ -88,12 +88,12 @@ export default function WalletLogin() {
         provider = new ethers.BrowserProvider(window.ethereum);
 
       } else if (connector === "walletconnect") {
-        console.log("🛠️ WC Project ID:", process.env.NEXT_PUBLIC_WC_PROJECT_ID);
-        console.log("🛠️ Infura URL:   ", process.env.NEXT_PUBLIC_INFURA_URL);
-        
+        console.log("🛠️ WC Project ID:", process.env.REACT_APP_WC_PROJECT_ID);
+        console.log("🛠️ Infura URL:   ", process.env.REACT_APP_INFURA_URL);
+
         const wc = await EthereumProvider.init({
-          projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID,
-          rpcMap: { 1: process.env.NEXT_PUBLIC_INFURA_URL },
+          projectId: process.env.REACT_APP_WC_PROJECT_ID,
+          rpcMap: { 1: process.env.REACT_APP_INFURA_URL },
           chains: [1],
           showQrModal: true
         });
@@ -102,7 +102,7 @@ export default function WalletLogin() {
 
       } else {
         const cb = new CoinbaseWalletSDK({ appName: "MeinShop", darkMode: false });
-        const cbProv = cb.makeWeb3Provider(process.env.NEXT_PUBLIC_INFURA_URL, 1);
+        const cbProv = cb.makeWeb3Provider(process.env.REACT_APP_INFURA_URL, 1);
         await cbProv.request({ method: "eth_requestAccounts" });
         provider = new ethers.BrowserProvider(cbProv);
       }
