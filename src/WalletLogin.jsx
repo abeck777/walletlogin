@@ -96,8 +96,13 @@ export default function WalletLogin() {
       provider = new ethers.BrowserProvider(wc);
 
     } else if (connector === "coinbase") {
-      const cbWallet = new CoinbaseWalletSDK({ appName: "MeinShop", darkMode: false });
-      const cbProvider = cbWallet.makeWeb3Provider(process.env.REACT_APP_INFURA_URL, 1);
+      const cbWallet = new CoinbaseWalletSDK({
+        appName: "MeinShop",
+        darkMode: false,
+        jsonRpcUrl: process.env.REACT_APP_INFURA_URL,
+        chainId:   1
+      }); 
+      const cbProvider = cbWallet.makeWeb3Provider();
       await cbProvider.request({ method: "eth_requestAccounts" });
       provider = new ethers.BrowserProvider(cbProvider);
     }
