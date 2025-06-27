@@ -76,39 +76,70 @@ export default function WalletLogin() {
 
   async function connectHandler() {
     if (!token) {
-      alert(t.guidePrefix + t.connect.replace("{name}", connectors.find(c => c.id === connector).name));
+      alert(t.guidePrefix + connectText);
       return;
     }
+
     let provider;
-    if (connector === "metamask") {
-      if (!window.ethereum) { alert("⚠️ Bitte installiere MetaMask."); return; }
-      await window.ethereum.request({ method: "eth_requestAccounts" });
-      provider = new ethers.BrowserProvider(window.ethereum);
+    try {
+      if (connector === "metamask") {
+        if (!window.ethereum) { throw new Error("Bitte installiere MetaMask."); }
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        provider = new ethers.BrowserProvider(window.ethereum);
 
-    } else if (connector === "walletconnect") {
-      const wc = await EthereumProvider.init({
-        projectId: process.env.REACT_APP_WC_PROJECT_ID,
-        rpcMap: { 1: process.env.REACT_APP_INFURA_URL },
-        chains: [1],
-        showQrModal: true
+      } else if (connector === "walletconnect") {
+        const wc = await EthereumProvider.init({
+          projectId: process.env.REACT_APP_WC_PROJECT_ID,
+          rpcMap: { 1: process.env.REACT_APP_INFURA_URL },
+          chains: [1],
+          showQrModal: true
+        });
+        await wc.enable();
+        provider = new ethers.BrowserProvider(wc);
+
+      } else if (connector === "coinbase") {
+        const cbWallet = new CoinbaseWalletSDK({
+          appName: "MeinShop",
+          darkMode: false,
+          jsonRpcUrl: process.env.REACT_APP_INFURA_URL,
+          chainId: 1
+        });
+        const cbProvider = cbWallet.makeWeb3Provider();
+        await cbProvider.request({ method: "eth_requestAccounts" });
+        provider = new ethers.BrowserProvider(cbProvider);
+      }
+
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+
+      // Sign-In with Ethereum (EIP-4361)
+      // 1) Nonce vom Server holen
+      const nonceRes = await fetch(`/api/nonce?token=${token}`);
+      if (!nonceRes.ok) throw new Error("Nonce konnte nicht geladen werden");
+      const { nonce } = await nonceRes.json();
+
+      // 2) Nachricht signieren lassen
+      const message = `Bitte bestätige: ${nonce}`;
+      const signature = await signer.signMessage(message);
+
+      // 3) Signature serverseitig verifizieren
+      const verifyRes = await fetch("/api/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, address, signature, nonce })
       });
-      await wc.enable();
-      provider = new ethers.BrowserProvider(wc);
+      const verifyJson = await verifyRes.json();
+      if (!verifyRes.ok || !verifyJson.success) {
+        throw new Error("Signatur ungültig – bitte erneut versuchen.");
+      }
 
-    } else if (connector === "coinbase") {
-      const cbWallet = new CoinbaseWalletSDK({
-        appName: "MeinShop",
-        darkMode: false,
-        jsonRpcUrl: process.env.REACT_APP_INFURA_URL,
-        chainId:   1
-      }); 
-      const cbProvider = cbWallet.makeWeb3Provider();
-      await cbProvider.request({ method: "eth_requestAccounts" });
-      provider = new ethers.BrowserProvider(cbProvider);
+      // 4) Bei Erfolg weiterleiten
+      window.location.href = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${address}`;
+
+    } catch (err) {
+      console.error(err);
+      alert(`⚠️ Fehler: ${err.message}`);
     }
-    const signer = await provider.getSigner();
-    const address = await signer.getAddress();
-    window.location.href = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${address}`;
   }
 
   return (
@@ -140,9 +171,9 @@ export default function WalletLogin() {
             </button>
           ))}
         </div>
-        <button onClick={connectHandler} style={{ width: '100%',	padding: '12px',	fontSize: '18px',	backgroundColor: '#222',	color: '#fff',	border: 'none',	borderRadius: '8px',	cursor: 'pointer' }}>{connectText}</button>
-        <p style={{	marginTop: '1.5rem',	fontSize: '14px',	color: '#555' }}>{t.guidePrefix}<a href="https://www.youtube-nocookie.com/watch?v=465676767787" target="_blank" rel="noopener noreferrer">{t.guideLink}</a></p>
-        <button onClick={() => { window.location.href = '/wallet-login-page'; }} style={{	marginTop: '2rem',	padding: '8px 16px',	fontSize: '14px',	backgroundColor: '#eee',	color: '#222',	border: '1px solid #ccc',	borderRadius: '4px',	cursor: 'pointer' }}>{t.back}</button>
+        <button onClick={connectHandler} style={{ width: '100%', padding: '12px', fontSize: '18px', backgroundColor: '#222', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>{connectText}</button>
+        <p style={{ marginTop: '1.5rem', fontSize: '14px', color: '#555' }}>{t.guidePrefix}<a href="https://www.youtube-nocookie.com/watch?v=465676767787" target="_blank" rel="noopener noreferrer">{t.guideLink}</a></p>
+        <button onClick={() => { window.location.href = '/wallet-login-page'; }} style={{ marginTop: '2rem', padding: '8px 16px', fontSize: '14px', backgroundColor: '#eee', color: '#222', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}>{t.back}</button>
       </div>
       <CookieConsent location="bottom" buttonText={t.accept} cookieName="goldsilver_cookies" style={{ background: "#2B373B" }} buttonStyle={{ color: "#4e503b", fontSize: "13px" }}>
         {t.cookie} <a href="https://goldsilverstuff.com/privacy-policy" style={{ color: "#FFD700" }}>Privacy Policy</a>
