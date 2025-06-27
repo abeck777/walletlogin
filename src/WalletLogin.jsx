@@ -12,6 +12,11 @@ export default function WalletLogin() {
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const langRef = useRef(null);
 
+  // ─── NEU: Basis-URL deines API-Servers ─────────────────────────────────────
+  // In .env: REACT_APP_API_BASE_URL=http://localhost:4000
+  // oder leer lassen, wenn du CRA-Proxy nutzt
+  const apiBase = process.env.REACT_APP_API_BASE_URL || "";
+
   // Token aus URL lesen
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -82,6 +87,7 @@ export default function WalletLogin() {
 
     let provider;
     try {
+      // ─── Wallet-Verbindung ───────────────────────────────────────────────────
       if (connector === "metamask") {
         if (!window.ethereum) { throw new Error("Bitte installiere MetaMask."); }
         await window.ethereum.request({ method: "eth_requestAccounts" });
@@ -112,9 +118,9 @@ export default function WalletLogin() {
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
-      // Sign-In with Ethereum (EIP-4361)
+      // ─── Sign-In with Ethereum (EIP-4361) ──────────────────────────────────
       // 1) Nonce vom Server holen
-      const nonceRes = await fetch(`/api/nonce?token=${token}`);
+      const nonceRes = await fetch(`${apiBase}/api/nonce?token=${token}`);
       if (!nonceRes.ok) throw new Error("Nonce konnte nicht geladen werden");
       const { nonce } = await nonceRes.json();
 
@@ -123,7 +129,7 @@ export default function WalletLogin() {
       const signature = await signer.signMessage(message);
 
       // 3) Signature serverseitig verifizieren
-      const verifyRes = await fetch("/api/verify", {
+      const verifyRes = await fetch(`${apiBase}/api/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, address, signature, nonce })
@@ -173,7 +179,7 @@ export default function WalletLogin() {
         </div>
         <button onClick={connectHandler} style={{ width: '100%', padding: '12px', fontSize: '18px', backgroundColor: '#222', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>{connectText}</button>
         <p style={{ marginTop: '1.5rem', fontSize: '14px', color: '#555' }}>{t.guidePrefix}<a href="https://www.youtube-nocookie.com/watch?v=465676767787" target="_blank" rel="noopener noreferrer">{t.guideLink}</a></p>
-        <button onClick={() => { window.location.href = '/wallet-login-page'; }} style={{ marginTop: '2rem', padding: '8px 16px', fontSize: '14px', backgroundColor: '#eee', color: '#222', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}>{t.back}</button>
+        <button onClick={() => { window.location.href = '/wallet-login-page'; }} style={{ marginTop: '2rem', padding: '8px 16px', fontSize: '14px', backgroundColor: '#eee', color: '#222', border: '1px solid '#ccc', borderRadius: '4px', cursor: 'pointer' }}>{t.back}</button>
       </div>
       <CookieConsent location="bottom" buttonText={t.accept} cookieName="goldsilver_cookies" style={{ background: "#2B373B" }} buttonStyle={{ color: "#4e503b", fontSize: "13px" }}>
         {t.cookie} <a href="https://goldsilverstuff.com/privacy-policy" style={{ color: "#FFD700" }}>Privacy Policy</a>
