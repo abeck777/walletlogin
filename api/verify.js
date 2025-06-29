@@ -1,6 +1,5 @@
 // pages/api/verify.js
 import { ethers } from "ethers";
-import { nonces } from "./nonce";
 
 export default function handler(req, res) {
   if (req.method !== "POST") {
@@ -15,7 +14,8 @@ export default function handler(req, res) {
       .json({ success: false, error: "Missing parameters" });
   }
 
-  const stored = nonces.get(token);
+  // Next.js API-Routen parsen Cookies automatisch in req.cookies
+  const stored = req.cookies.gs_nonce;
   if (stored !== nonce) {
     return res
       .status(400)
@@ -23,13 +23,16 @@ export default function handler(req, res) {
   }
 
   try {
-    // Verifizieren der signierten Nachricht "token:nonce"
     const message = `${token}:${nonce}`;
     const recovered = ethers.verifyMessage(message, signature);
     if (recovered.toLowerCase() !== address.toLowerCase()) {
       throw new Error("Address mismatch");
     }
-    nonces.delete(token); // Einmaliger Gebrauch
+    // Nonce nur einmal verwenden: Cookie löschen
+    res.setHeader("Set-Cookie", serialize("gs_nonce", "", {
+      maxAge: -1,
+      path: "/",
+    }));
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error("Verify failed:", err);

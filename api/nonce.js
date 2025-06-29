@@ -1,8 +1,6 @@
 // pages/api/nonce.js
 import { randomBytes } from "crypto";
-
-// In-Memory Store für Nonces (nur Demo; in Produktion bitte persistent speichern!)
-export const nonces = new Map();
+import { serialize } from "cookie";
 
 export default function handler(req, res) {
   if (req.method !== "GET") {
@@ -14,6 +12,15 @@ export default function handler(req, res) {
     return res.status(400).json({ error: "Missing token" });
   }
   const nonce = randomBytes(8).toString("hex");
-  nonces.set(token, nonce);
+
+  // HTTP-only Cookie setzen
+  res.setHeader("Set-Cookie", serialize("gs_nonce", nonce, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    sameSite: "strict",
+    maxAge: 300, // 5 Minuten
+  }));
+
   return res.status(200).json({ nonce });
 }
