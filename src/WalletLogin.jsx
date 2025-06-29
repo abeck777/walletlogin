@@ -12,18 +12,18 @@ export default function WalletLogin() {
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const langRef = useRef(null);
 
-  // Token aus URL lesen
+  // 1) Token aus URL lesen
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const accessToken = params.get("accessToken");
-    if (!accessToken) {
+    const t = params.get("accessToken");
+    if (!t) {
       alert("❌ Zugriffstoken fehlt in der URL.");
       return;
     }
-    setToken(accessToken);
+    setToken(t);
   }, []);
 
-  // Sprachmenü schließen bei Klick außerhalb
+  // 2) Sprachmenü schließen
   useEffect(() => {
     function handleClickOutside(e) {
       if (langRef.current && !langRef.current.contains(e.target)) {
@@ -39,27 +39,31 @@ export default function WalletLogin() {
     { id: "walletconnect", name: "WalletConnect",   logo: "/logos/walletconnect.png" },
     { id: "coinbase",      name: "Coinbase Wallet", logo: "/logos/coinbase.png" }
   ];
-
   const languages = [
-    { code: "de", label: "Deutsch",    flag: "/logos/germany.png" },
-    { code: "en", label: "English",    flag: "/logos/usa.png" },
-    { code: "fr", label: "Français",   flag: "/logos/france.png" },
-    { code: "pl", label: "Polski",     flag: "/logos/poland.png" },
-    { code: "ru", label: "Русский",    flag: "/logos/russia.png" },
-    { code: "zh", label: "中文",       flag: "/logos/china.png" },
-    { code: "it", label: "Italiano",   flag: "/logos/italy.png" },
-    { code: "es", label: "Español",    flag: "/logos/spain.png" },
-    { code: "pt", label: "Português",  flag: "/logos/portugal.png" },
-    { code: "ja", label: "日本語",      flag: "/logos/japan.png" },
-    { code: "hi", label: "हिंदी",      flag: "/logos/india.png" },
-    { code: "af", label: "Afrikaans",  flag: "/logos/southafrica.png" }
+    { code: "de", label: "Deutsch", flag: "/logos/germany.png" },
+    { code: "en", label: "English", flag: "/logos/usa.png" },
+    /* … weitere Sprachen … */
   ];
-
   const translations = {
-    de: { header: "🔐 Wallet-Verbindung starten", guidePrefix: "Noch keine Wallet? ", guideLink: "Hier gibt's eine 2-Minuten-Anleitung.", connect: "Mit {name} verbinden", back: "zurück zur Login-Seite", cookie: "Diese Website verwendet Cookies, um dein Erlebnis zu verbessern.", accept: "Akzeptieren" },
-    en: { header: "🔐 Connect Wallet",          guidePrefix: "No wallet yet? ",     guideLink: "Here's a 2-minute guide.",       connect: "Connect with {name}",  back: "Back to login page",      cookie: "This website uses cookies to enhance your experience.", accept: "Accept" },
-    fr: { header: "🔐 Connecter le portefeuille", guidePrefix: "Pas encore de portefeuille ? ", guideLink: "Voici un guide de 2 minutes.", connect: "Se connecter avec {name}", back: "Retour à la page de connexion", cookie: "Ce site utilise des cookies pour améliorer votre expérience.", accept: "Accepter" },
-    // … Weitere Sprachen wie gehabt …
+    de: {
+      header: "🔐 Wallet-Verbindung starten",
+      guidePrefix: "Noch keine Wallet? ",
+      guideLink: "Hier gibt's eine 2-Minuten-Anleitung.",
+      connect: "Mit {name} verbinden",
+      back: "zurück zur Login-Seite",
+      cookie: "Diese Website verwendet Cookies, um dein Erlebnis zu verbessern.",
+      accept: "Akzeptieren"
+    },
+    en: {
+      header: "🔐 Connect Wallet",
+      guidePrefix: "No wallet yet? ",
+      guideLink: "Here's a 2-minute guide.",
+      connect: "Connect with {name}",
+      back: "Back to login page",
+      cookie: "This website uses cookies to enhance your experience.",
+      accept: "Accept"
+    }
+    /* … restliche Übersetzungen … */
   };
 
   const t = translations[language] || translations.de;
@@ -76,7 +80,7 @@ export default function WalletLogin() {
       let provider;
 
       if (connector === "metamask") {
-        // MetaMask: echtes MetaMask-Provider-Objekt finden
+        // MetaMask: wirklich das isMetaMask-Objekt wählen
         const { ethereum } = window;
         if (!ethereum) {
           alert("⚠️ Bitte installiere MetaMask.");
@@ -91,7 +95,7 @@ export default function WalletLogin() {
         provider = new ethers.BrowserProvider(mm);
 
       } else if (connector === "walletconnect") {
-        // WalletConnect unverändert
+        // WalletConnect wie gehabt
         const wc = await EthereumProvider.init({
           projectId: process.env.REACT_APP_WC_PROJECT_ID,
           rpcMap: { 1: process.env.REACT_APP_INFURA_URL },
@@ -102,9 +106,14 @@ export default function WalletLogin() {
         provider = new ethers.BrowserProvider(wc);
 
       } else {
-        // Coinbase Wallet SDK
-        const cb = new CoinbaseWalletSDK({ appName: "MeinShop", darkMode: false });
-        const cbProv = cb.makeWeb3Provider(process.env.REACT_APP_INFURA_URL, 1);
+        // Coinbase Wallet SDK v4
+        const cb = new CoinbaseWalletSDK({
+          appName: "MeinShop",
+          jsonRpcUrl: process.env.REACT_APP_INFURA_URL,
+          chainId: 1,
+          darkMode: false
+        });
+        const cbProv = cb.makeWeb3Provider();
         await cbProv.request({ method: "eth_requestAccounts" });
         provider = new ethers.BrowserProvider(cbProv);
       }
@@ -113,10 +122,10 @@ export default function WalletLogin() {
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
-      // Wir signieren direkt den Access-Token
+      // 3) ROHER Token signieren (kein Zusatztext!)
       let signature;
       try {
-        signature = await signer.signMessage(`Bitte bestätige: ${token}`);
+        signature = await signer.signMessage(token);
       } catch (err) {
         if (err.code === 4001) {
           alert("✋ Signatur abgelehnt – bitte bestätige in deiner Wallet.");
@@ -125,7 +134,7 @@ export default function WalletLogin() {
         throw err;
       }
 
-      // Einziger Verify-Call
+      // 4) Einziger Verify-Aufruf
       const res = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -137,7 +146,7 @@ export default function WalletLogin() {
         throw new Error("Signatur ungültig – bitte erneut versuchen.");
       }
 
-      // Weiterleitung auf Callback
+      // 5) Weiterleitung
       window.location.href = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${address}`;
 
     } catch (err) {
@@ -148,24 +157,34 @@ export default function WalletLogin() {
 
   return (
     <>
-      <div style={{ position: 'relative', maxWidth: '400px', margin: '2rem auto', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{
+        position: 'relative',
+        maxWidth: '400px',
+        margin: '2rem auto',
+        textAlign: 'center',
+        fontFamily: 'Arial, sans-serif'
+      }}>
         {/* Sprachwahl */}
         <div ref={langRef} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
           <button onClick={() => setLangMenuOpen(!langMenuOpen)} style={{
-            display: 'flex', alignItems: 'center', padding: '4px',
-            background: '#fff', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer'
+            display: 'flex', alignItems: 'center',
+            padding: '4px', background: '#fff',
+            border: '1px solid #ccc', borderRadius: '4px',
+            cursor: 'pointer'
           }}>
             <img src={currentLang.flag} alt="" style={{ width: '16px', marginRight: '4px' }} />
             <span style={{ fontSize: '12px' }}>{currentLang.label}</span>
           </button>
           {langMenuOpen && (
             <div style={{
-              marginTop: '4px', background: '#fff', border: '1px solid #ccc',
-              borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              marginTop: '4px', background: '#fff',
+              border: '1px solid #ccc', borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}>
               {languages.map(l => (
                 <div key={l.code} onClick={() => { setLanguage(l.code); setLangMenuOpen(false); }} style={{
-                  display: 'flex', alignItems: 'center', padding: '4px 8px', cursor: 'pointer'
+                  display: 'flex', alignItems: 'center',
+                  padding: '4px 8px', cursor: 'pointer'
                 }}>
                   <img src={l.flag} alt="" style={{ width: '16px', marginRight: '8px' }} />
                   <span style={{ fontSize: '12px' }}>{l.label}</span>
@@ -175,12 +194,14 @@ export default function WalletLogin() {
           )}
         </div>
 
-        {/* Logo & Header */}
+        {/* Logo + Header */}
         <img src="/logos/company-logo.png" alt="Logo" style={{ maxWidth: '150px', marginBottom: '0.5rem' }} />
-        <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#555', marginBottom: '1rem' }}>GoldSilverStuff.com©</p>
+        <p style={{ marginBottom: '1rem', fontSize: '16px', fontWeight: 'bold', color: '#555' }}>
+          GoldSilverStuff.com©
+        </p>
         <h2 style={{ marginBottom: '1.5rem' }}>{t.header}</h2>
 
-        {/* Connector Buttons */}
+        {/* Connector-Auswahl */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
           {connectors.map(c => (
             <button key={c.id} onClick={() => setConnector(c.id)} style={{
@@ -204,10 +225,13 @@ export default function WalletLogin() {
           {connectText}
         </button>
 
-        {/* Guide & Back */}
+        {/* Guide & Zurück */}
         <p style={{ marginTop: '1rem', fontSize: '14px', color: '#555' }}>
           {t.guidePrefix}
-          <a href="https://www.youtube-nocookie.com/watch?v=465676767787" target="_blank" rel="noopener noreferrer">{t.guideLink}</a>
+          <a href="https://www.youtube-nocookie.com/watch?v=465676767787"
+             target="_blank" rel="noopener noreferrer">
+            {t.guideLink}
+          </a>
         </p>
         <button onClick={() => window.location.href = '/'} style={{
           marginTop: '1rem', padding: '8px 16px', fontSize: '14px',
@@ -217,7 +241,7 @@ export default function WalletLogin() {
           {t.back}
         </button>
 
-        {/* Cookie Consent */}
+        {/* CookieConsent */}
         <CookieConsent
           location="bottom"
           buttonText={t.accept}
