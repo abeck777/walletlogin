@@ -7,9 +7,12 @@ export default function handler(req, res) {
     res.setHeader("Allow", ["POST"]);
     return res.status(405).end("Method Not Allowed");
   }
+
   const { token, address, signature, nonce } = req.body;
   if (!token || !address || !signature || !nonce) {
-    return res.status(400).json({ success: false, error: "Missing parameters" });
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing parameters" });
   }
 
   const stored = nonces.get(token);
@@ -20,6 +23,7 @@ export default function handler(req, res) {
   }
 
   try {
+    // Verifizieren der signierten Nachricht "token:nonce"
     const message = `${token}:${nonce}`;
     const recovered = ethers.verifyMessage(message, signature);
     if (recovered.toLowerCase() !== address.toLowerCase()) {

@@ -23,25 +23,23 @@ export default function WalletLogin() {
     setToken(t);
   }, []);
 
-  // 2) Sprachmenü schließen bei Klick außen
+  // 2) Sprachmenü schließen bei Klick außerhalb
   useEffect(() => {
-    function onClickOutside(e) {
+    function handleClickOutside(e) {
       if (langRef.current && !langRef.current.contains(e.target)) {
         setLangMenuOpen(false);
       }
     }
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Connector-Buttons
+  // 3) Connector-Buttons & Sprach-Listen
   const connectors = [
     { id: "metamask", name: "MetaMask", logo: "/logos/metamask.png" },
     { id: "walletconnect", name: "WalletConnect", logo: "/logos/walletconnect.png" },
     { id: "coinbase", name: "Coinbase Wallet", logo: "/logos/coinbase.png" }
   ];
-
-  // Sprach-Definitionslisten (vollständig)
   const languages = [
     { code: "de", label: "Deutsch", flag: "/logos/germany.png" },
     { code: "en", label: "English", flag: "/logos/usa.png" },
@@ -57,7 +55,7 @@ export default function WalletLogin() {
     { code: "af", label: "Afrikaans", flag: "/logos/southafrica.png" }
   ];
 
-  // UI-Texte
+  // 4) UI-Texte
   const translations = {
     de: {
       header: "🔐 Wallet-Verbindung starten",
@@ -170,10 +168,13 @@ export default function WalletLogin() {
   };
 
   const t = translations[language] || translations.de;
-  const connectText = t.connect.replace("{name}", connectors.find(c => c.id === connector).name);
-  const currentLang = languages.find(l => l.code === language) || languages[0];
+  const connectText = t.connect.replace(
+    "{name}",
+    connectors.find((c) => c.id === connector).name
+  );
+  const currentLang = languages.find((l) => l.code === language) || languages[0];
 
-  // 3) Click-Handler mit EIP-4361 + Nonce-Flow
+  // 5) Click-Handler mit EIP-4361 + Nonce-Flow
   async function connectHandler() {
     if (!token) {
       alert(t.guidePrefix + connectText);
@@ -183,14 +184,14 @@ export default function WalletLogin() {
     try {
       let provider;
 
-      // → MetaMask
+      // MetaMask
       if (connector === "metamask") {
         const { ethereum } = window;
         if (!ethereum) {
           alert("⚠️ Bitte installiere MetaMask.");
           return;
         }
-        const mm = ethereum.providers?.find(p => p.isMetaMask) ?? ethereum;
+        const mm = ethereum.providers?.find((p) => p.isMetaMask) ?? ethereum;
         if (!mm || !mm.isMetaMask) {
           alert("⚠️ MetaMask nicht gefunden.");
           return;
@@ -198,7 +199,7 @@ export default function WalletLogin() {
         await mm.request({ method: "eth_requestAccounts" });
         provider = new ethers.BrowserProvider(mm);
 
-      // → WalletConnect
+      // WalletConnect
       } else if (connector === "walletconnect") {
         const wc = await EthereumProvider.init({
           projectId: process.env.REACT_APP_WC_PROJECT_ID,
@@ -209,7 +210,7 @@ export default function WalletLogin() {
         await wc.enable();
         provider = new ethers.BrowserProvider(wc);
 
-      // → Coinbase Wallet
+      // Coinbase Wallet
       } else {
         const cb = new CoinbaseWalletSDK({
           appName: "MeinShop",
@@ -226,12 +227,12 @@ export default function WalletLogin() {
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
-      // 3a) Nonce vom Server holen
+      // 5a) Nonce holen
       const nonceRes = await fetch(`/api/nonce?token=${token}`);
       if (!nonceRes.ok) throw new Error("Nonce konnte nicht geladen werden");
       const { nonce } = await nonceRes.json();
 
-      // 3b) Nachricht "token:nonce" signieren
+      // 5b) Nachricht signieren
       let signature;
       try {
         signature = await signer.signMessage(`${token}:${nonce}`);
@@ -243,7 +244,7 @@ export default function WalletLogin() {
         throw err;
       }
 
-      // 3c) Verifizieren
+      // 5c) Verifizieren
       const verifyRes = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -254,7 +255,7 @@ export default function WalletLogin() {
         throw new Error("Signatur ungültig – bitte erneut versuchen.");
       }
 
-      // 3d) Erfolg → Redirect
+      // 5d) Redirect
       window.location.href = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${address}`;
 
     } catch (err) {
@@ -263,34 +264,20 @@ export default function WalletLogin() {
     }
   }
 
-  // 4) Render UI
+  // 6) Render UI
   return (
     <>
-      <div style={{
-        position: "relative", maxWidth: "400px",
-        margin: "2rem auto", textAlign: "center",
-        fontFamily: "Arial, sans-serif"
-      }}>
+      <div style={{ position: "relative", maxWidth: "400px", margin: "2rem auto", textAlign: "center", fontFamily: "Arial, sans-serif" }}>
         {/* Sprachwahl */}
         <div ref={langRef} style={{ position: "absolute", top: "0.5rem", right: "0.5rem" }}>
-          <button onClick={() => setLangMenuOpen(!langMenuOpen)} style={{
-            display: "flex", alignItems: "center", padding: "4px",
-            background: "#fff", border: "1px solid #ccc", borderRadius: "4px",
-            cursor: "pointer"
-          }}>
+          <button onClick={() => setLangMenuOpen(!langMenuOpen)} style={{ display: "flex", alignItems: "center", padding: "4px", background: "#fff", border: "1px solid #ccc", borderRadius: "4px", cursor: "pointer" }}>
             <img src={currentLang.flag} alt="" style={{ width: "16px", marginRight: "4px" }} />
             <span style={{ fontSize: "12px" }}>{currentLang.label}</span>
           </button>
           {langMenuOpen && (
-            <div style={{
-              marginTop: "4px", background: "#fff",
-              border: "1px solid #ccc", borderRadius: "4px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-            }}>
+            <div style={{ marginTop: "4px", background: "#fff", border: "1px solid #ccc", borderRadius: "4px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
               {languages.map(l => (
-                <div key={l.code}
-                     onClick={() => { setLanguage(l.code); setLangMenuOpen(false); }}
-                     style={{ display: "flex", alignItems: "center", padding: "4px 8px", cursor: "pointer" }}>
+                <div key={l.code} onClick={() => { setLanguage(l.code); setLangMenuOpen(false); }} style={{ display: "flex", alignItems: "center", padding: "4px 8px", cursor: "pointer" }}>
                   <img src={l.flag} alt="" style={{ width: "16px", marginRight: "8px" }} />
                   <span style={{ fontSize: "12px" }}>{l.label}</span>
                 </div>
@@ -301,9 +288,7 @@ export default function WalletLogin() {
 
         {/* Logo & Header */}
         <img src="/logos/company-logo.png" alt="Logo" style={{ maxWidth: "150px", marginBottom: "0.5rem" }} />
-        <p style={{ marginBottom: "1rem", fontSize: "16px", fontWeight: "bold", color: "#555" }}>
-          GoldSilverStuff.com©
-        </p>
+        <p style={{ marginBottom: "1rem", fontSize: "16px", fontWeight: "bold", color: "#555" }}>GoldSilverStuff.com©</p>
         <h2 style={{ marginBottom: "1.5rem" }}>{t.header}</h2>
 
         {/* Connector-Buttons */}
@@ -333,8 +318,7 @@ export default function WalletLogin() {
         {/* Guide & Back */}
         <p style={{ marginTop: "1rem", fontSize: "14px", color: "#555" }}>
           {t.guidePrefix}
-          <a href="https://www.youtube-nocookie.com/watch?v=465676767787"
-             target="_blank" rel="noopener noreferrer">
+          <a href="https://www.youtube-nocookie.com/watch?v=465676767787" target="_blank" rel="noopener noreferrer">
             {t.guideLink}
           </a>
         </p>
@@ -355,7 +339,7 @@ export default function WalletLogin() {
           buttonStyle={{ color: "#4e503b", fontSize: "13px" }}
         >
           {t.cookie}{" "}
-          <a href="https://goldsilverstuff.com/privacy-policy" style={{ color: "#FFD700" }}>
+          <a href="https://goldsilverstuff.com/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: "#FFD700" }}>
             Privacy Policy
           </a>
         </CookieConsent>

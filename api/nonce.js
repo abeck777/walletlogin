@@ -1,7 +1,7 @@
 // pages/api/nonce.js
 import { randomBytes } from "crypto";
 
-// In-Memory Store für Nonces (nur Demo; in Produktion in DB o. ä.)
+// In-Memory Store für Nonces (nur Demo; in Produktion bitte persistent speichern!)
 export const nonces = new Map();
 
 export default function handler(req, res) {
