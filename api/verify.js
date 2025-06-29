@@ -1,30 +1,26 @@
 // pages/api/verify.js
-import { NextApiRequest, NextApiResponse } from "next";
 import { ethers } from "ethers";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).end("Method Not Allowed");
+    res.setHeader("Allow", ["POST"]);
+    return res.status(405).json({ success: false, error: "Method Not Allowed" });
   }
 
-  const { token, address, signature } = req.body as {
-    token?: string;
-    address?: string;
-    signature?: string;
-  };
+  const { token, address, signature } = req.body;
   if (!token || !address || !signature) {
     return res.status(400).json({ success: false, error: "Missing parameters" });
   }
 
   try {
-    // hier verifizieren wir exakt das, was der Client signiert hat:
+    // genau die Nachricht verifizieren, die der Client signiert hat:
     const recovered = ethers.verifyMessage(token, signature);
+
     if (recovered.toLowerCase() !== address.toLowerCase()) {
-      throw new Error("Address mismatch");
+      return res.status(400).json({ success: false, error: "Invalid signature" });
     }
 
-    // alles gut
+    // alles okay
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error("Verify failed:", err);
