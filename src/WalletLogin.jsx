@@ -6,16 +6,16 @@ import { EthereumProvider } from "@walletconnect/ethereum-provider";
 import CookieConsent from "react-cookie-consent";
 
 export default function WalletLogin() {
+  // State
   const [token, setToken] = useState(null);
   const [connector, setConnector] = useState("metamask");
   const [language, setLanguage] = useState("de");
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const langRef = useRef(null);
 
-  // === 1) Token aus URL lesen ===
+  // 1) Token aus URL lesen
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const t = params.get("accessToken");
+    const t = new URLSearchParams(window.location.search).get("accessToken");
     if (!t) {
       alert("❌ Zugriffstoken fehlt in der URL.");
       return;
@@ -23,38 +23,41 @@ export default function WalletLogin() {
     setToken(t);
   }, []);
 
-  // === 2) Sprachmenü schließen ===
+  // 2) Sprachmenü schließen bei Klick außen
   useEffect(() => {
-    function handleClickOutside(e) {
+    function onClickOutside(e) {
       if (langRef.current && !langRef.current.contains(e.target)) {
         setLangMenuOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  // Connector-Buttons
   const connectors = [
-    { id: "metamask",      name: "MetaMask",        logo: "/logos/metamask.png" },
-    { id: "walletconnect", name: "WalletConnect",   logo: "/logos/walletconnect.png" },
-    { id: "coinbase",      name: "Coinbase Wallet", logo: "/logos/coinbase.png" }
+    { id: "metamask", name: "MetaMask", logo: "/logos/metamask.png" },
+    { id: "walletconnect", name: "WalletConnect", logo: "/logos/walletconnect.png" },
+    { id: "coinbase", name: "Coinbase Wallet", logo: "/logos/coinbase.png" }
   ];
 
+  // Sprach-Definitionslisten (vollständig)
   const languages = [
-    { code: "de", label: "Deutsch",    flag: "/logos/germany.png" },
-    { code: "en", label: "English",    flag: "/logos/usa.png" },
-    { code: "fr", label: "Français",   flag: "/logos/france.png" },
-    { code: "pl", label: "Polski",     flag: "/logos/poland.png" },
-    { code: "ru", label: "Русский",    flag: "/logos/russia.png" },
-    { code: "zh", label: "中文",       flag: "/logos/china.png" },
-    { code: "it", label: "Italiano",   flag: "/logos/italy.png" },
-    { code: "es", label: "Español",    flag: "/logos/spain.png" },
-    { code: "pt", label: "Português",  flag: "/logos/portugal.png" },
-    { code: "ja", label: "日本語",      flag: "/logos/japan.png" },
-    { code: "hi", label: "हिंदी",      flag: "/logos/india.png" },
-    { code: "af", label: "Afrikaans",  flag: "/logos/southafrica.png" }
+    { code: "de", label: "Deutsch", flag: "/logos/germany.png" },
+    { code: "en", label: "English", flag: "/logos/usa.png" },
+    { code: "fr", label: "Français", flag: "/logos/france.png" },
+    { code: "pl", label: "Polski", flag: "/logos/poland.png" },
+    { code: "ru", label: "Русский", flag: "/logos/russia.png" },
+    { code: "zh", label: "中文", flag: "/logos/china.png" },
+    { code: "it", label: "Italiano", flag: "/logos/italy.png" },
+    { code: "es", label: "Español", flag: "/logos/spain.png" },
+    { code: "pt", label: "Português", flag: "/logos/portugal.png" },
+    { code: "ja", label: "日本語", flag: "/logos/japan.png" },
+    { code: "hi", label: "हिंदी", flag: "/logos/india.png" },
+    { code: "af", label: "Afrikaans", flag: "/logos/southafrica.png" }
   ];
 
+  // UI-Texte
   const translations = {
     de: {
       header: "🔐 Wallet-Verbindung starten",
@@ -139,7 +142,7 @@ export default function WalletLogin() {
     },
     ja: {
       header: "🔐 ウォレットを接続",
-      guidePrefix: "まだウォレットがないですか? ",
+      guidePrefix: "まだウォレットがないですか？ ",
       guideLink: "2 分ガイドはこちら。",
       connect: "{name} で接続",
       back: "ログインページに戻る",
@@ -170,7 +173,7 @@ export default function WalletLogin() {
   const connectText = t.connect.replace("{name}", connectors.find(c => c.id === connector).name);
   const currentLang = languages.find(l => l.code === language) || languages[0];
 
-  // === 3) Click-Handler ===
+  // 3) Click-Handler mit EIP-4361 + Nonce-Flow
   async function connectHandler() {
     if (!token) {
       alert(t.guidePrefix + connectText);
@@ -180,8 +183,8 @@ export default function WalletLogin() {
     try {
       let provider;
 
+      // → MetaMask
       if (connector === "metamask") {
-        // wirklich MetaMask auswählen
         const { ethereum } = window;
         if (!ethereum) {
           alert("⚠️ Bitte installiere MetaMask.");
@@ -195,6 +198,7 @@ export default function WalletLogin() {
         await mm.request({ method: "eth_requestAccounts" });
         provider = new ethers.BrowserProvider(mm);
 
+      // → WalletConnect
       } else if (connector === "walletconnect") {
         const wc = await EthereumProvider.init({
           projectId: process.env.REACT_APP_WC_PROJECT_ID,
@@ -205,8 +209,8 @@ export default function WalletLogin() {
         await wc.enable();
         provider = new ethers.BrowserProvider(wc);
 
+      // → Coinbase Wallet
       } else {
-        // Coinbase Wallet SDK v4
         const cb = new CoinbaseWalletSDK({
           appName: "MeinShop",
           jsonRpcUrl: process.env.REACT_APP_INFURA_URL,
@@ -218,34 +222,39 @@ export default function WalletLogin() {
         provider = new ethers.BrowserProvider(cbProv);
       }
 
-      // Signer + Adresse
+      // Signer & Adresse
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
-      // Nur den Token signieren
+      // 3a) Nonce vom Server holen
+      const nonceRes = await fetch(`/api/nonce?token=${token}`);
+      if (!nonceRes.ok) throw new Error("Nonce konnte nicht geladen werden");
+      const { nonce } = await nonceRes.json();
+
+      // 3b) Nachricht "token:nonce" signieren
       let signature;
       try {
-        signature = await signer.signMessage(token);
+        signature = await signer.signMessage(`${token}:${nonce}`);
       } catch (err) {
         if (err.code === 4001) {
-          alert("✋ Signatur abgelehnt – bitte bestätige in deiner Wallet.");
+          alert("✋ Signatur abgelehnt – bitte bestätige.");
           return;
         }
         throw err;
       }
 
-      // 4) Verify-Call
-      const res = await fetch("/api/verify", {
+      // 3c) Verifizieren
+      const verifyRes = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, address, signature })
+        body: JSON.stringify({ token, address, signature, nonce })
       });
-      const { success } = await res.json();
-      if (!res.ok || !success) {
+      const { success } = await verifyRes.json();
+      if (!verifyRes.ok || !success) {
         throw new Error("Signatur ungültig – bitte erneut versuchen.");
       }
 
-      // 5) Weiterleitung
+      // 3d) Erfolg → Redirect
       window.location.href = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${address}`;
 
     } catch (err) {
@@ -254,14 +263,12 @@ export default function WalletLogin() {
     }
   }
 
-  // === 6) Render ===
+  // 4) Render UI
   return (
     <>
       <div style={{
-        position: "relative",
-        maxWidth: "400px",
-        margin: "2rem auto",
-        textAlign: "center",
+        position: "relative", maxWidth: "400px",
+        margin: "2rem auto", textAlign: "center",
         fontFamily: "Arial, sans-serif"
       }}>
         {/* Sprachwahl */}
@@ -281,10 +288,9 @@ export default function WalletLogin() {
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
             }}>
               {languages.map(l => (
-                <div key={l.code} onClick={() => { setLanguage(l.code); setLangMenuOpen(false); }} style={{
-                  display: "flex", alignItems: "center",
-                  padding: "4px 8px", cursor: "pointer"
-                }}>
+                <div key={l.code}
+                     onClick={() => { setLanguage(l.code); setLangMenuOpen(false); }}
+                     style={{ display: "flex", alignItems: "center", padding: "4px 8px", cursor: "pointer" }}>
                   <img src={l.flag} alt="" style={{ width: "16px", marginRight: "8px" }} />
                   <span style={{ fontSize: "12px" }}>{l.label}</span>
                 </div>
@@ -315,7 +321,7 @@ export default function WalletLogin() {
           ))}
         </div>
 
-        {/* Connect */}
+        {/* Connect-Button */}
         <button onClick={connectHandler} style={{
           width: "100%", padding: "12px", fontSize: "18px",
           backgroundColor: "#222", color: "#fff", border: "none",
