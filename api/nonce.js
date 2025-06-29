@@ -1,16 +1,15 @@
 // pages/api/nonce.js
-import { NextApiRequest, NextApiResponse } from "next";
 import { randomBytes } from "crypto";
 
-// In-Memory Store für Nonces (nur für Demo, bei Realbetrieb persistent speichern!)
-export const nonces = new Map<string,string>();
+// In-Memory Store für Nonces (nur Demo; in Produktion in DB o. ä.)
+export const nonces = new Map();
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default function handler(req, res) {
   if (req.method !== "GET") {
-    res.setHeader("Allow", "GET");
+    res.setHeader("Allow", ["GET"]);
     return res.status(405).end("Method Not Allowed");
   }
-  const token = req.query.token as string;
+  const token = req.query.token;
   if (!token) {
     return res.status(400).json({ error: "Missing token" });
   }
