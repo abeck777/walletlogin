@@ -57,20 +57,20 @@ export default function WalletLogin() {
 
   const translations = {
     de: { header: "🔐 Wallet-Verbindung starten", guidePrefix: "Noch keine Wallet? ", guideLink: "Hier gibt's eine 2-Minuten-Anleitung.", connect: "Mit {name} verbinden", back: "zurück zur Login-Seite", cookie: "Diese Website verwendet Cookies, um dein Erlebnis zu verbessern.", accept: "Akzeptieren" },
-    en: { header: "🔐 Connect Wallet",          guidePrefix: "No wallet yet? ",    guideLink: "Here's a 2-minute guide.",        connect: "Connect with {name}",  back: "Back to login page",      cookie: "This website uses cookies to enhance your experience.", accept: "Accept" },
-    fr: { header: "🔐 Connecter le portefeuille", guidePrefix: "Pas encore de portefeuille ?", guideLink: "Voici un guide de 2 minutes.", connect: "Se connecter avec {name}", back: "Retour à la page de connexion", cookie: "Ce site utilise des cookies pour améliorer votre expérience.", accept: "Accepter" },
-    pl: { header: "🔐 Połącz portfel",           guidePrefix: "Jeszcze nie masz portfela ?", guideLink: "Oto przewodnik w 2 minuty.",  connect: "Połącz z {name}",     back: "Powrót do strony logowania", cookie: "Ta strona używa plików cookie, aby poprawić Twoje doświadczenie.", accept: "Akceptuj" },
-    ru: { header: "🔐 Подключить кошелёк",       guidePrefix: "Ещё нет кошелька ?",           guideLink: "Вот двухминутное руководство.", connect: "Подключиться к {name}", back: "Вернуться на страницу входа", cookie: "Этот сайт использует файлы cookie для улучшения вашего опыта.", accept: "Принять" },
-    zh: { header: "🔐 连接钱包",                guidePrefix: "还没有钱包？",                 guideLink: "这里有一个2分钟教程。",        connect: "使用{name}连接",      back: "返回登录页面",          cookie: "此网站使用 Cookie 来增强您的体验。", accept: "接受" },
-    it: { header: "🔐 Connetti portafoglio",    guidePrefix: "Non hai ancora un portafoglio ?", guideLink: "Ecco una guida di 2 minuti.",  connect: "Connetti con {name}", back: "Torna alla pagina di accesso", cookie: "Questo sito utilizza i cookie per migliorare la tua esperienza.", accept: "Accetta" },
-    es: { header: "🔐 Conectar billetera",      guidePrefix: "¿No tienes cartera ?",            guideLink: "Aquí tienes una guía de 2 minutos.", connect: "Conectar con {name}", back: "Volver a la página de inicio de sesión", cookie: "Este sitio utiliza cookies para mejorar tu experiencia.", accept: "Aceptar" },
-    pt: { header: "🔐 Conectar carteira",       guidePrefix: "Ainda não tem uma carteira ?",     guideLink: "Aqui está um guia de 2 minutos.", connect: "Conectar com {name}", back: "Voltar à página de login", cookie: "Este site usa cookies para melhorar sua experiência.", accept: "Aceitar" },
-    ja: { header: "🔐 ウォレットを接続",         guidePrefix: "まだウォレットがないですか ？",    guideLink: "2分ガイドはこちら。",           connect: "{name}で接続",     back: "ログインページに戻る",      cookie: "このサイトではクッキーを使用してユーザー体験を向上させています。", accept: "同意する" },
-    hi: { header: "🔐 वॉलेट कनेक्ट करें",       guidePrefix: "अभी तक वॉलेट नहीं है ?",         guideLink: "यहाँ 2-मिनट मार्गदर्शिका है।",    connect: "{name} से कनेक्ट करें", back: "लॉगिन पेज पर वापस जाएँ", cookie: "यह वेबसाइट आपके अनुभव को बेहतर बनाने के लिए कुकीज़ का उपयोग करती है।", accept: "स्वीकार करें" },
-    af: { header: "🔐 Sluit beursie aan",       guidePrefix: "Nog geen beursie ?",             guideLink: "Hier is ’n 2-minuut gids.",          connect: "Verbind met {name}", back: "Terug na aanmeldbladsy",      cookie: "Hierdie webwerf gebruik koekies om u ervaring te verbeter.", accept: "Aksepteer" }
+    en: { header: "🔐 Connect Wallet",          guidePrefix: "No wallet yet? ", guideLink: "Here's a 2-minute guide.", connect: "Connect with {name}", back: "Back to login page", cookie: "This website uses cookies to enhance your experience.", accept: "Accept" },
+    fr: { header: "🔐 Connecter le portefeuille", guidePrefix: "Pas encore de portefeuille ? ", guideLink: "Voici un guide de 2 minutes.", connect: "Se connecter avec {name}", back: "Retour à la page de connexion", cookie: "Ce site utilise des cookies pour améliorer votre expérience.", accept: "Accepter" },
+    pl: { header: "🔐 Połącz portfel",           guidePrefix: "Jeszcze nie masz portfela? ", guideLink: "Oto przewodnik w 2 minuty.", connect: "Połącz z {name}", back: "Powrót do strony logowania", cookie: "Ta strona używa plików cookie, aby poprawić Twoje doświadczenie.", accept: "Akceptuj" },
+    ru: { header: "🔐 Подключить кошелёк",       guidePrefix: "Ещё нет кошелька? ", guideLink: "Вот двухминутное руководство.", connect: "Подключиться к {name}", back: "Вернуться на страницу входа", cookie: "Этот сайт использует файлы cookie для улучшения вашего опыта.", accept: "Принять" },
+    zh: { header: "🔐 连接钱包",                guidePrefix: "还没有钱包？ ", guideLink: "这里有一个 2 分钟教程。", connect: "使用 {name} 连接", back: "返回登录页面", cookie: "此网站使用 Cookie 来增强您的体验。", accept: "接受" },
+    it: { header: "🔐 Connetti portafoglio",    guidePrefix: "Non hai ancora un portafoglio? ", guideLink: "Ecco una guida di 2 minuti.", connect: "Connetti con {name}", back: "Torna alla pagina di accesso", cookie: "Questo sito utilizza i cookie per migliorare la tua esperienza.", accept: "Accetta" },
+    es: { header: "🔐 Conectar billetera",      guidePrefix: "¿No tienes cartera? ", guideLink: "Aquí tienes una guía de 2 minutos.", connect: "Conectar con {name}", back: "Volver a la página de inicio de sesión", cookie: "Este sitio utiliza cookies para mejorar tu experiencia.", accept: "Aceptar" },
+    pt: { header: "🔐 Conectar carteira",       guidePrefix: "Ainda não tem uma carteira? ", guideLink: "Aqui está um guia de 2 minutos.", connect: "Conectar com {name}", back: "Voltar à página de login", cookie: "Este site usa cookies para melhorar sua experiência.", accept: "Aceitar" },
+    ja: { header: "🔐 ウォレットを接続",         guidePrefix: "まだウォレットがないですか? ", guideLink: "2 分ガイドはこちら。", connect: "{name} で接続", back: "ログインページに戻る", cookie: "このサイトではクッキーを使用してユーザー体験を向上させています。", accept: "同意する" },
+    hi: { header: "🔐 वॉलेट कनेक्ट करें",       guidePrefix: "अभी तक वॉलेट नहीं है? ", guideLink: "यहाँ 2-मिनट मार्गदर्शिका है।", connect: "{name} से कनेक्ट करें", back: "लॉगिन पेज पर वापस जाएँ", cookie: "यह वेबसाइट आपके अनुभव को बेहतर बनाने के लिए कुकीज़ का उपयोग करती है।", accept: "स्वीकार करें" },
+    af: { header: "🔐 Sluit beursie aan",       guidePrefix: "Nog geen beursie? ", guideLink: "Hier is ’n 2-minuut gids.", connect: "Verbind met {name}", back: "Terug na aanmeldbladsy", cookie: "Hierdie webwerf gebruik koekies om u ervaring te verbeter.", accept: "Aksepteer" }
   };
 
-  const t = translations[language] || translations.de;
+  const t = translations[language];
   const connectText = t.connect.replace("{name}", connectors.find(c => c.id === connector).name);
   const currentLang = languages.find(l => l.code === language);
 
@@ -167,4 +167,13 @@ export default function WalletLogin() {
             </button>
           ))}
         </div>
-        <button onClick={connectHandler} style={{ width: '100%', padding: '12px', fontSize
+        <button onClick={connectHandler} style={{ width: '100%', padding: '12px', fontSize: '18px', backgroundColor: '#222', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>{connectText}</button>
+        <p style={{ marginTop: '1.5rem', fontSize: '14px', color: '#555' }}>{t.guidePrefix}<a href="https://www.youtube-nocookie.com/watch?v=465676767787" target="_blank" rel="noopener noreferrer">{t.guideLink}</a></p>
+        <button onClick={() => window.location.href = '/' } style={{ marginTop: '2rem', padding: '8px 16px', fontSize: '14px', backgroundColor: '#eee', color: '#222', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}>{t.back}</button>
+      </div>
+      <CookieConsent location="bottom" buttonText={t.accept} cookieName="goldsilver_cookies" style={{ background: "#2B373B" }} buttonStyle={{ color: "#4e503b", fontSize: "13px" }}>
+        {t.cookie} <a href="https://goldsilverstuff.com/privacy-policy" style={{ color: "#FFD700" }}>Privacy Policy</a>
+      </CookieConsent>
+    </>
+  );
+}
