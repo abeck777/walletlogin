@@ -194,7 +194,7 @@ export default function WalletLogin() {
         </p>
         <button
           onClick={() => window.location.href = '/'}
-          style={{ marginTop: '2rem', padding: '8px 16px', fontSize: '14px', backgroundColor: '#eee', color: '#222', border: '1px solid '#ccc', borderRadius: '4px', cursor: 'pointer' }}
+          style={{ marginTop: '2rem', padding: '8px 16px', fontSize: '14px', backgroundColor: '#eee', color: '#222', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}
         >
           {t.back}
         </button>
