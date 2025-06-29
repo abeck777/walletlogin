@@ -81,12 +81,74 @@ export default function WalletLogin() {
     }
 
     let provider;
-    if (connector === "metamask") {
-      if (!window.ethereum || !window.ethereum.isMetaMask) {
-        alert("⚠️ Bitte installiere oder öffne deine MetaMask-App.");
-        return;
+    try {
+      if (connector === "metamask") {
+        if (!window.ethereum) {
+          alert("⚠️ Bitte installiere MetaMask.");
+          return;
+        }
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        provider = new ethers.BrowserProvider(window.ethereum);
+
+      } else if (connector === "walletconnect") {
+        const wc = await EthereumProvider.init({
+          projectId: process.env.REACT_APP_WC_PROJECT_ID,
+          rpcMap: { 1: process.env.REACT_APP_INFURA_URL },
+          chains: [1],
+          showQrModal: true
+        });
+        await wc.enable();
+        provider = new ethers.BrowserProvider(wc);
+
+      } else if (connector === "coinbase") {
+        const cbWallet = new CoinbaseWalletSDK({ appName: "MeinShop", darkMode: false });
+        const cbProv = cbWallet.makeWeb3Provider(process.env.REACT_APP_INFURA_URL, 1);
+        await cbProv.request({ method: "eth_requestAccounts" });
+        provider = new ethers.BrowserProvider(cbProv);
+
+      } else {
+        throw new Error("Unbekannter Connector: " + connector);
       }
-      await window.ethereum.request({ method: "eth_requestAccounts" });
+
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+
+      // Zusätzliche Signatur für MetaMask & Coinbase
+      if (connector === "metamask" || connector === "coinbase") {
+        try {
+          await signer.signMessage(`Bitte bestätige, dass dies deine Wallet ist: ${address}`);
+        } catch (err) {
+          if (err.code === 4001) {
+            alert("✋ Signatur abgelehnt – bitte bestätige in deiner Wallet.");
+            return;
+          }
+          throw err;
+        }
+      }
+
+      // EIP-4361 Flow: Nonce holen, signieren, verifizieren
+      const nonceRes = await fetch(`/api/nonce?token=${token}`);
+      if (!nonceRes.ok) throw new Error("Nonce konnte nicht geladen werden");
+      const { nonce } = await nonceRes.json();
+      const signature = await signer.signMessage(`Bitte bestätige: ${nonce}`);
+      const verifyRes = await fetch(`/api/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, address, signature, nonce })
+      });
+      const verifyJson = await verifyRes.json();
+      if (!verifyRes.ok || !verifyJson.success) {
+        throw new Error("Signatur ungültig – bitte erneut versuchen.");
+      }
+
+      // Weiterleitung
+      window.location.href = `https://www.goldsilverstuff.com/wallet-callback?token=${token}&wallet=${address}`;
+
+    } catch (err) {
+      console.error(err);
+      alert(`⚠️ Fehler: ${err.message}`);
+    }
+  }
       provider = new ethers.BrowserProvider(window.ethereum);
 
     } else if (connector === "walletconnect") {
@@ -173,3 +235,4 @@ export default function WalletLogin() {
     </>
   );
 }
+
