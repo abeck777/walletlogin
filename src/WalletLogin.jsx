@@ -334,7 +334,7 @@ export default function WalletLogin() {
           {t.guideLink}
         </a>
       </p>
-      <button onClick={() => (window.location.href = "/")} style={{
+      <button onClick={() => (window.location.href = "https://www.goldsilverstuff.com/wallet-login-page")} style={{
         marginTop: "1rem", padding: "8px 16px", fontSize: "14px",
         backgroundColor: "#eee", color: "#222", border: "1px solid #ccc",
         borderRadius: "4px", cursor: "pointer"
